@@ -11,6 +11,8 @@ final case class PersonRepository(quill: Quill.Postgres[SnakeCase]) {
 
 
   def getPeople: IO[SQLException, List[Person]] = run(query[Person])
+  def getPersonByUsername(username: String): IO[SQLException, Option[Person]] = run(query[Person]
+    .filter(_.username == lift(username))).map(_.headOption)
   def getCountry: IO[SQLException, List[Country]] = run(query[Country])
 }
 

@@ -3,7 +3,7 @@ package dev.bank.person
 import zio.schema.DeriveSchema
 import zio.schema.Schema
 
-final case class Person (id: Int, name: String, moneyAmount: Double)
+final case class Person (id: Int, username: String, password: String, moneyAmount: Double)
 
 final case class Country(id: Int, name: String)
 
