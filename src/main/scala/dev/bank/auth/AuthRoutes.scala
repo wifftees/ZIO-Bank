@@ -9,6 +9,9 @@ object AuthRoutes {
     login.implement[AuthService](
       Handler.fromFunctionZIO {
         loginDTO => for {
+          _ <- ZIO.debug(
+            s"Passed username: ${loginDTO.username} and password: ${loginDTO.password}"
+          )
           personService <- ZIO.service[AuthService]
           response <- personService.authenticate(loginDTO)
         } yield response
