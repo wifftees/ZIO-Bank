@@ -2,15 +2,9 @@ package dev.bank
 
 import dev.bank.auth.{AuthRoutes, AuthService, LoginDTO}
 import dev.bank.auth.error.AuthError
-import dev.bank.auth.error.AuthError.{
-  DbError,
-  InvalidToken,
-  MissingClaim,
-  MissingHeader,
-  PasswordMismatch,
-  PersonNotFound
-}
+import dev.bank.auth.error.AuthError.{DbError, InvalidToken, MissingClaim, MissingHeader, PasswordMismatch, PersonNotFound}
 import dev.bank.person.{Person, PersonRepository, PersonRoutes, PersonService}
+import dev.bank.transaction.{History, Transaction, TransactionRepository, TransactionRoutes, TransactionService}
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
 import zio.http.codec.HttpCodec
@@ -39,7 +33,7 @@ object MainApp extends ZIOAppDefault {
       HttpCodec.error[MissingHeader](Status.Forbidden)
     )
 
-  val getUsers = Endpoint(RoutePattern.GET / "people")
+  val getPeople = Endpoint(RoutePattern.GET / "people")
     .out[List[Person]]
 
   val login = Endpoint(RoutePattern.POST / "login")
@@ -50,13 +44,22 @@ object MainApp extends ZIOAppDefault {
       HttpCodec.error[PersonNotFound](Status.Unauthorized),
       HttpCodec.error[PasswordMismatch](Status.Unauthorized)
     )
+  val getTransactions = Endpoint(RoutePattern.GET / "transactions")
+    .header(HeaderCodec.authorization)
+    .out[History]
+    .outErrors[AuthError](
+      HttpCodec.error[MissingClaim](Status.Forbidden),
+      HttpCodec.error[InvalidToken](Status.Forbidden),
+      HttpCodec.error[MissingHeader](Status.Forbidden)
+    )
 
   val userOpenAPI =
-    OpenAPIGen.fromEndpoints(title = "Users Open API", version = "1.0", getUsers, getPerson)
+    OpenAPIGen.fromEndpoints(title = "Users Open API", version = "1.0", getPeople, getPerson)
 
   val authOpenAPI   = OpenAPIGen.fromEndpoints(title = "Auth Open API", version = "1.0", login)
-  val swaggerRoutes = SwaggerUI.routes("docs", userOpenAPI, authOpenAPI)
-  val routes        = PersonRoutes() ++ AuthRoutes() ++ swaggerRoutes
+  val transactionOpenAPI   = OpenAPIGen.fromEndpoints(title = "Transaction Open API", version = "1.0", getTransactions)
+  val swaggerRoutes = SwaggerUI.routes("docs", userOpenAPI, authOpenAPI, transactionOpenAPI)
+  val routes        = PersonRoutes() ++ AuthRoutes() ++ TransactionRoutes() ++ swaggerRoutes
 
   val quillLayer = Quill.Postgres.fromNamingStrategy(SnakeCase)
   val dataSourceLayer: ZLayer[Any, Throwable, DataSource] = Quill.DataSource.fromPrefix("dbConfig")
@@ -71,6 +74,8 @@ object MainApp extends ZIOAppDefault {
       dataSourceLayer,
       PersonService.layer,
       PersonRepository.layer,
+      TransactionService.layer,
+      TransactionRepository.layer,
       AuthService.layer
     )
 

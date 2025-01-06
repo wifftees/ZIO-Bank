@@ -1,6 +1,5 @@
 package dev.bank.person
 
-import dev.bank.auth.error.AuthError.PersonNotFound
 import zio.{IO, UIO, ZIO, ZLayer}
 
 import java.sql.SQLException
