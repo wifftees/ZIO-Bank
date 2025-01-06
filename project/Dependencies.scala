@@ -12,4 +12,7 @@ object Dependencies {
   val zioTest = "dev.zio"       %% "zio-test"         % "2.1.0"
   val zioHttpTest = "dev.zio"       %% "zio-http-testkit" % "3.0.0-RC8"
   val zioSbtTest = "dev.zio"       %% "zio-test-sbt"     % "2.1.1"
+  val zioConfig = "dev.zio" %% "zio-config" % "4.0.2"
+  val zioConfigTypesafe = "dev.zio" %% "zio-config-typesafe" % "4.0.2"
+  val zioConfigMagnolia = "dev.zio" %% "zio-config-magnolia" % "4.0.2"
 }
