@@ -2,9 +2,22 @@ package dev.bank
 
 import dev.bank.auth.{AuthRoutes, AuthService, LoginDTO}
 import dev.bank.auth.error.AuthError
-import dev.bank.auth.error.AuthError.{DbError, InvalidToken, MissingClaim, MissingHeader, PasswordMismatch, PersonNotFound}
+import dev.bank.auth.error.AuthError.{
+  DbError,
+  InvalidToken,
+  MissingClaim,
+  MissingHeader,
+  PasswordMismatch,
+  PersonNotFound
+}
 import dev.bank.person.{Person, PersonRepository, PersonRoutes, PersonService}
-import dev.bank.transaction.{History, Transaction, TransactionRepository, TransactionRoutes, TransactionService}
+import dev.bank.transaction.{
+  History,
+  Transaction,
+  TransactionRepository,
+  TransactionRoutes,
+  TransactionService
+}
 import io.getquill.SnakeCase
 import io.getquill.jdbczio.Quill
 import zio.http.codec.HttpCodec
@@ -44,6 +57,7 @@ object MainApp extends ZIOAppDefault {
       HttpCodec.error[PersonNotFound](Status.Unauthorized),
       HttpCodec.error[PasswordMismatch](Status.Unauthorized)
     )
+
   val getTransactions = Endpoint(RoutePattern.GET / "transactions")
     .header(HeaderCodec.authorization)
     .out[History]
@@ -56,8 +70,11 @@ object MainApp extends ZIOAppDefault {
   val userOpenAPI =
     OpenAPIGen.fromEndpoints(title = "Users Open API", version = "1.0", getPeople, getPerson)
 
-  val authOpenAPI   = OpenAPIGen.fromEndpoints(title = "Auth Open API", version = "1.0", login)
-  val transactionOpenAPI   = OpenAPIGen.fromEndpoints(title = "Transaction Open API", version = "1.0", getTransactions)
+  val authOpenAPI = OpenAPIGen.fromEndpoints(title = "Auth Open API", version = "1.0", login)
+
+  val transactionOpenAPI =
+    OpenAPIGen.fromEndpoints(title = "Transaction Open API", version = "1.0", getTransactions)
+
   val swaggerRoutes = SwaggerUI.routes("docs", userOpenAPI, authOpenAPI, transactionOpenAPI)
   val routes        = PersonRoutes() ++ AuthRoutes() ++ TransactionRoutes() ++ swaggerRoutes
 

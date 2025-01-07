@@ -5,6 +5,7 @@ import zio.schema.{DeriveSchema, Schema}
 sealed trait TransactionError {}
 
 object TransactionError {
+
   final case class NotEnoughMoney() extends TransactionError
 
   object NotEnoughMoney {
@@ -20,13 +21,18 @@ object TransactionError {
   final case class ReceiverNotFound() extends TransactionError
 
   object ReceiverNotFound {
-    implicit val receiverNotFoundSchema: Schema[ReceiverNotFound] = DeriveSchema.gen[ReceiverNotFound]
+
+    implicit val receiverNotFoundSchema: Schema[ReceiverNotFound] =
+      DeriveSchema.gen[ReceiverNotFound]
+
   }
 
   final case class DbError() extends TransactionError
+
   object DbError {
     implicit val dbErrorSchema: Schema[DbError] = DeriveSchema.gen[DbError]
   }
 
   implicit val transactionErrorSchema: Schema[TransactionError] = DeriveSchema.gen[TransactionError]
+
 }

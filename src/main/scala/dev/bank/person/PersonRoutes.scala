@@ -23,7 +23,7 @@ object PersonRoutes {
       getPerson.implement[PersonService](Handler.fromFunctionZIO {
         case Bearer(token) =>
           for {
-            jwtClaimData      <- AuthService.processJwt(token.value.asString)
+            jwtClaimData  <- AuthService.processJwt(token.value.asString)
             personService <- ZIO.service[PersonService]
             person        <- personService.getPersonByUsername(jwtClaimData.username)
             // TODO remove unsafe get method

@@ -2,10 +2,24 @@ package dev.bank.auth
 
 import dev.bank.auth.AuthService.{SECRET_TOKEN, checkPassword, jwtEncode}
 import dev.bank.auth.error.AuthError
-import dev.bank.auth.error.AuthError.{DbError, InvalidToken, MissingClaim, MissingHeader, PasswordMismatch, PersonNotFound}
+import dev.bank.auth.error.AuthError.{
+  DbError,
+  InvalidToken,
+  MissingClaim,
+  MissingHeader,
+  PasswordMismatch,
+  PersonNotFound
+}
 import dev.bank.person.{Person, PersonRepository}
 import pdi.jwt.{JwtAlgorithm, JwtClaim, JwtZIOJson}
-import zio.json.{DecoderOps, DeriveJsonDecoder, DeriveJsonEncoder, EncoderOps, JsonDecoder, JsonEncoder}
+import zio.json.{
+  DecoderOps,
+  DeriveJsonDecoder,
+  DeriveJsonEncoder,
+  EncoderOps,
+  JsonDecoder,
+  JsonEncoder
+}
 import zio.{IO, UIO, ZIO, ZLayer}
 
 import java.sql.SQLException
@@ -36,8 +50,13 @@ object AuthService {
   final case class JwtClaimData(id: Int, username: String)
 
   object JwtClaimData {
-    implicit val jwtClaimDataEncoder: JsonEncoder[JwtClaimData] = DeriveJsonEncoder.gen[JwtClaimData]
-    implicit val jwtClaimDataDecoder: JsonDecoder[JwtClaimData] = DeriveJsonDecoder.gen[JwtClaimData]
+
+    implicit val jwtClaimDataEncoder: JsonEncoder[JwtClaimData] =
+      DeriveJsonEncoder.gen[JwtClaimData]
+
+    implicit val jwtClaimDataDecoder: JsonDecoder[JwtClaimData] =
+      DeriveJsonDecoder.gen[JwtClaimData]
+
   }
 
   def checkPassword(person: Person, password: String): Boolean = person.password == password
@@ -57,13 +76,16 @@ object AuthService {
     JwtZIOJson.decode(token, key, Seq(JwtAlgorithm.HS256))
 
   def processJwt(token: String): IO[AuthError, JwtClaimData] = for {
-    _        <- ZIO.debug(s"Token: $token")
-    claim    <- ZIO.fromTry(jwtDecode(token, SECRET_TOKEN)).orElseFail(InvalidToken())
-    _        <- ZIO.debug(s"JWT claim: $claim")
+    _                <- ZIO.debug(s"Token: $token")
+    claim            <- ZIO.fromTry(jwtDecode(token, SECRET_TOKEN)).orElseFail(InvalidToken())
+    _                <- ZIO.debug(s"JWT claim: $claim")
     jwtClaimDataJson <- ZIO.fromOption(claim.subject).orElseFail(MissingClaim())
-    _        <- ZIO.debug(s"Extracted claim data: $jwtClaimDataJson")
-    jwtClaimData <- ZIO.fromEither(jwtClaimDataJson.fromJson[JwtClaimData]).orElseFail(MissingClaim())
+    _                <- ZIO.debug(s"Extracted claim data: $jwtClaimDataJson")
+    jwtClaimData <- ZIO
+      .fromEither(jwtClaimDataJson.fromJson[JwtClaimData])
+      .orElseFail(MissingClaim())
   } yield jwtClaimData
 
   val layer: ZLayer[PersonRepository, Nothing, AuthService] = ZLayer.derive[AuthService]
+
 }

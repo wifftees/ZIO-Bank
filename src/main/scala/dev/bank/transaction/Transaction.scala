@@ -7,4 +7,3 @@ final case class Transaction(id: Int, senderId: Int, receiverId: Int, amount: Do
 object Transaction {
   implicit val transactionSchema: Schema[Transaction] = DeriveSchema.gen[Transaction]
 }
-
